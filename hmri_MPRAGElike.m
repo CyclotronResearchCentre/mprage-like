@@ -40,7 +40,7 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 
 % Set defaults & check input
 params_def = struct(...
-    'lambda', 1000, ...
+    'lambda', 100, ...
     'indiv', false, ...
     'BIDSform', false);
 if nargin<2, params = params_def; end
@@ -69,12 +69,22 @@ fn_basename = spm_file(fn_in(1,:),'basename');
 fn_tmp = fullfile(pth_out, fn_basename);
 
 % get the job done
+ic_flags = struct('dmtx',true);
+
 for ii=1:Nlambda
    if Nlambda==1 % just one lambda
-       fn_out_ii = fn_tmp;
+       fn_out_ii = [fn_tmp,'_MPRAGEl.nii'];
    else
-       fn_out_ii = sprintf(sprintf('%%s_l%%%dd',Nd_lambda),fn_tmp,params.lambda(ii));
+       fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGEl.nii'];
+%        fn_out_ii =
+%        sprintf(sprintf('%%s_l%%%dd',Nd_lambda),fn_tmp,params.lambda(ii));
+%        Trying to add the right number of 0's
    end
+   V_Allin = spm_vol(fn_in);
+%    ic_flags.dtype = V_MRl.dt(1); % keeping the same data type
+   ic_flags.dtype = 16; % use floats
+   lambda = params.lambda(ii);
+   spm_imcalc(fn_in,fn_out_ii,'(X(1,:)-lambda)./(mean(X(2:end,:),1)+lambda)',ic_flags,lambda)
 end
 
 
