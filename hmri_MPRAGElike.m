@@ -85,6 +85,12 @@ for ii=1:Nlambda
    ic_flags.dtype = 16; % use floats
    lambda = params.lambda(ii);
    spm_imcalc(fn_in,fn_out_ii,'(X(1,:)-lambda)./(mean(X(2:end,:),1)+lambda)',ic_flags,lambda)
+    % Check thresholding
+    if ~isempty(params.thresh) % apply thresholding
+        vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
+        vval_MPRlike(vval_MPRlike>params.thresh(2)) = 0;
+    end
+    spm_write_vol(V_out,reshape(vval_MPRlike',sz(1:3)));
 end
 
 
