@@ -51,7 +51,11 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % - if/when iamges are coregistered, then one should do the job in a
 %   separate derivatives folder
 %
-%
+% TO-DO's
+% 1) deal with BIDS organized data
+% 2) add (optional) coregsitration step in processing
+% 3) deal with individual MPRAGElike images, from only MTw and PDw
+% 
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
 % Original repository https://github.com/mafortin/mprage-like
