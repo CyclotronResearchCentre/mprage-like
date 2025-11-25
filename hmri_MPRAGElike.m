@@ -30,6 +30,12 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % fn_out : char array of filenames of generated image(s)
 %          Depending on the input parameters there could be up to 3 images
 %          per lambda value passed.
+%
+% NOTE
+% In the MPRAGE-like image, capping values of extremely high values seems a
+% good idea but not so sure for the negative ones...
+% A better idea could be to 1/ take their absolute value, then 2/ divide by
+% lambda. This way we keep some positive but low-level signal
 % 
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
@@ -98,7 +104,9 @@ for ii=1:Nlambda
     
     % Check thresholding
     if ~isempty(params.thresh) % apply thresholding
-        vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
+%         vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
+        vval_MPRlike(vval_MPRlike<params.thresh(1)) = ...
+            abs(vval_MPRlike(vval_MPRlike<params.thresh(1)))/lambda;
         vval_MPRlike(vval_MPRlike>params.thresh(2)) = 0;
     end
     spm_write_vol(V_out,reshape(vval_MPRlike',sz(1:3)));
