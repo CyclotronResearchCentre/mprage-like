@@ -116,6 +116,7 @@ ic_flags = struct( ...
     'descrip', 'MPRAGE-like image');
 
 % Get the job done
+fn_out_c = cell(Nlambda,1); 
 for ii=1:Nlambda
     lambda = params.lambda(ii);
     if Nlambda==1 % just one lambda
@@ -144,9 +145,10 @@ for ii=1:Nlambda
         % Write out fixed volume
         spm_write_vol(V_out,val_MPRlike);
     end
-    
+    % Collect output files
+    fn_out_c{ii} = fn_out_ii;
 end
 
-fn_out = fn_out_ii;
+fn_out = char(fn_out_c);
 
 end
