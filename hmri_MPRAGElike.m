@@ -71,8 +71,11 @@ pth_out = pth_in;
 fn_basename = spm_file(fn_in(1,:),'basename');
 fn_tmp = fullfile(pth_out, fn_basename);
 
-% get the job done
-ic_flags = struct('dmtx',true);
+% Read in all the data
+% -> more memory use but more flexible treatement than with spm_imcalc
+V_in = spm_vol(fn_in);
+val_in = spm_read_vols(V_in); sz = size(val_in);
+vval_in = reshape(val_in,[prod(sz(1:3)) sz(4)])'; % row-vectorized images
 
 % Prepare output volume(s)
 V_out = V_in(1);
@@ -80,19 +83,19 @@ V_out.dt(1) = 16; % use floats!
 V_out.descrip = 'MPRAGE-like image';
 % get the job done
 for ii=1:Nlambda
-   if Nlambda==1 % just one lambda
-       fn_out_ii = [fn_tmp,'_MPRAGEl.nii'];
-   else
-       fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGEl.nii'];
-%        fn_out_ii =
-%        sprintf(sprintf('%%s_l%%%dd',Nd_lambda),fn_tmp,params.lambda(ii));
-%        Trying to add the right number of 0's
-   end
-   V_Allin = spm_vol(fn_in);
-%    ic_flags.dtype = V_MRl.dt(1); % keeping the same data type
-   ic_flags.dtype = 16; % use floats
-   lambda = params.lambda(ii);
-   spm_imcalc(fn_in,fn_out_ii,'(X(1,:)-lambda)./(mean(X(2:end,:),1)+lambda)',ic_flags,lambda)
+    if Nlambda==1 % just one lambda
+        fn_out_ii = [fn_tmp,'_MPRAGElike.nii'];
+    else
+        fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGElike.nii'];
+        %        fn_out_ii =
+        %        sprintf(sprintf('%%s_l%%%dd',Nd_lambda),fn_tmp,params.lambda(ii));
+        %        Trying to add the right number of 0's
+    end
+    V_out.fname = fn_out_ii;
+    lambda = params.lambda(ii);
+    vval_MPRlike = (vval_in(1,:)-lambda)./(mean(vval_in(2:end,:),1)+lambda);
+    %    spm_imcalc(fn_in,fn_out_ii,'(X(1,:)-lambda)./(mean(X(2:end,:),1)+lambda)',ic_flags,lambda)
+    
     % Check thresholding
     if ~isempty(params.thresh) % apply thresholding
         vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
