@@ -83,7 +83,7 @@ end
 Nlambda = numel(params.lambda);
 if Nlambda>1
     % Plan saving the different lambdas in file name
-    Nd_lambda = ceil(log10(max(params.lambda(:))));
+    Nd_lambda = ceil(log10(max(params.lambda(:))+1));
     % Number of digits to write the lambdas
 end
 
@@ -113,13 +113,15 @@ ic_flags = struct( ...
 
 % Get the job done
 for ii=1:Nlambda
+    lambda = params.lambda(ii);
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_tmp,'_MPRAGElike.nii'];
     else
-        fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGElike.nii'];
-        %        fn_out_ii =
-        %        sprintf(sprintf('%%s_l%%%dd',Nd_lambda),fn_tmp,params.lambda(ii));
-        %        Trying to add the right number of 0's
+        %         fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGElike.nii'];
+        fn_out_ii = sprintf( ... 
+            sprintf('%%s_MPRAGElike_l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
+            fn_tmp,lambda);
+        
     end
     V_out.fname = fn_out_ii;
     %     vval_MPRlike = (vval_in(1,:)-lambda)./(mean(vval_in(2:end,:),1)+lambda);
