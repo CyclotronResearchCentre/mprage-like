@@ -20,7 +20,7 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %   .indiv  : a binary flag, to decide whether individual images are
 %             created for each 2nd and 3rd input filename when 3 images are
 %             passed in fn_in. These images will be labelled 'i1' and 'i2'.
-%            [false, def.]
+%             [false, def.]
 %   .thresh : threshold for [min max]range in MPRAGE-like image as in paper
 %             but if left empty, NO thresholding applied. [[0 500], def.]
 %   .BIDSform : a binary flag, to indicate if BIDS format is followed.
@@ -32,11 +32,26 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %          per lambda value passed.
 %
 % NOTE
+% A) using spm_imcalc vs loading images
+% Loading the images seems very appealing but then this assumes the images
+% are already coregistered, as we would work with the same voxel grid. Thus
+% to allow the automatic coregistration of images (i.e. updating the
+% voxel-to-realworld mappin) one should be using spm_imcalc as it use the
+% realworld space of the 1st image!
+% Loading the MPRAGE-like images makes it easier for the thresholding/
+% fixing of the image though
+% B) Thresholding of MPRAGE-like image
 % In the MPRAGE-like image, capping values of extremely high values seems a
 % good idea but not so sure for the negative ones...
 % A better idea could be to 1/ take their absolute value, then 2/ divide by
 % lambda. This way we keep some positive but low-level signal
-% 
+% C) FOllowing BIDS format
+% This remains to be implemented...
+% - Filename should be suffixed with 'MPRAGElike' instead of 'MPM'
+% - if/when iamges are coregistered, then one should do the job in a
+%   separate derivatives folder
+%
+%
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
 % Original repository https://github.com/mafortin/mprage-like
