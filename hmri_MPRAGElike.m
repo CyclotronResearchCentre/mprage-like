@@ -23,6 +23,8 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %             [false, def.]
 %   .thresh : threshold for [min max]range in MPRAGE-like image as in paper
 %             but if left empty, NO thresholding applied. [[0 500], def.]
+%   .coreg  : a binary flag, to decide whether or not the input images
+%             should be coregistered to the 1st one. [false, def.]
 %   .BIDSform : a binary flag, to indicate if BIDS format is followed.
 %               [false, def.]
 %
@@ -45,7 +47,12 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % good idea but not so sure for the negative ones...
 % A better idea could be to 1/ take their absolute value, then 2/ divide by
 % lambda. This way we keep some positive but low-level signal
-% C) FOllowing BIDS format
+% C) Coregistration
+% In order to keep the original data untouched, when the input images have
+% to be coregistered to the 1st one, then the 2nd (and 3rd image if
+% provided) are fist copied in a temporary folder. These coregistered
+% temporary images are then deleted at the end of the process.
+% D) FOllowing BIDS format
 % This remains to be implemented...
 % - Filename should be suffixed with 'MPRAGElike' instead of 'MPM'
 % - if/when images are coregistered, then one should do the job in a
@@ -69,6 +76,7 @@ params_def = struct(...
     'lambda', 100, ...
     'indiv', false, ...
     'thresh', [0 500], ...
+    'coreg', false, ...
     'BIDSform', false);
 if nargin<2, params = params_def; end
 
@@ -95,17 +103,43 @@ end
 
 pth_in = spm_file(fn_in(1,:),'fpath');
 pth_out = pth_in;
-fn_basename = spm_file(fn_in(1,:),'basename');
-fn_tmp = fullfile(pth_out, fn_basename);
+fn_basename = fullfile(pth_out,spm_file(fn_in(1,:),'basename'));
+% fn_tmp = fullfile(pth_out, fn_basename);
+
+% Deal with coregistration, if requested
+% To preserve the original images, the 2nd and 3rd (if provided) image(s) 
+% are simply copied in a temporary folder, coregistered to the 1st one,
+% then after processing the temporary volumes are deleted !
+if params.coreg
+    fn_in_orig = fn_in; %#ok<*NASGU>
+    fn_in_c = cellstr(fn_in);
+    % temporary folder is created within root folder, this might be an 
+    % issue on some systems... -> deal with it later if/when necessary
+   pth_tmp = fullfile(pth_in,['tmp_',datestr(now,'yyyymmddTHHMMSS')]);
+   if ~exist(pth_tmp,'dir'), mkdir(pth_tmp), end
+   % copy original files as 'img2.nii' and 'img3.nii', 
+   % then coregister by changing the mapping only
+   flags_coreg = spm_get_defaults('coreg.estimate');
+   flags_coreg.params   = [0 0 0  0 0 0]; % Starting estimates
+   flags_coreg.graphics = false; % no display
+   for ii=2:Nimg_in
+       fn_tmp = fullfile(pth_tmp,sprintf('img%d.nii',ii));
+       copyfile(deblank(fn_in(ii,:)), fn_tmp);
+       x = spm_coreg(fn_in(1,:), fn_tmp, flags_coreg);
+       % coregistration matrix & vx-to-mm matrix for moving image
+       M  = spm_matrix(x); MM = spm_get_space(fn_tmp);
+       % update vx-to-mm matrix for moving image
+       spm_get_space(fn_tmp, M\MM)
+       % keep name of temporary moving image
+       fn_in_c{ii} = fn_tmp;
+   end
+   fn_in = char(fn_in_c);
+end
 
 % Map input volumes
 V_in = spm_vol(fn_in);
-% Read in all the data
-% -> more memory use but more flexible treatement than with spm_imcalc
-% val_in = spm_read_vols(V_in); sz = size(val_in);
-% vval_in = reshape(val_in,[prod(sz(1:3)) sz(4)])'; % row-vectorized images
 
-% Prepare output volume(s)
+% Prepare output volume structure
 V_out = V_in(1);
 V_out.dt(1) = 16; % use floats!
 V_out.descrip = 'MPRAGE-like image';
@@ -122,11 +156,11 @@ fn_out_c = cell(Nlambda,N_MPRcreate);
 for ii=1:Nlambda
     lambda = params.lambda(ii);
     if Nlambda==1 % just one lambda
-        fn_out_ii = [fn_tmp,'_MPRAGElike.nii'];
+        fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
     else % adding lambda alue as suffix if multiple values
         fn_out_ii = sprintf( ...
             sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
-            fn_tmp,lambda);
+            fn_basename,lambda);
         
     end
     for jj=1:N_MPRcreate % Looping on nr of images to create per lambda
@@ -169,6 +203,12 @@ for ii=1:Nlambda
     end
 end
 
+% Cleanup temporary folder & images for gorecstration, if used
+if params.coreg
+    rmdir(pth_tmp,'s');
+end
+
+% Collect output
 fn_out = char(fn_out_c);
 
 end
