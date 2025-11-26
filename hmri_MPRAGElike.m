@@ -48,14 +48,13 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % C) FOllowing BIDS format
 % This remains to be implemented...
 % - Filename should be suffixed with 'MPRAGElike' instead of 'MPM'
-% - if/when iamges are coregistered, then one should do the job in a
+% - if/when images are coregistered, then one should do the job in a
 %   separate derivatives folder
 %
 % TO-DO's
 % 1) deal with BIDS organized data
 % 2) add (optional) coregsitration step in processing
-% 3) deal with individual MPRAGElike images, from only MTw and PDw
-% 
+%
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
 % Original repository https://github.com/mafortin/mprage-like
@@ -81,6 +80,9 @@ elseif Nimg_in < 2
 end
 if Nimg_in==2 && params.indiv
     params.indiv = false ; % No individual images if only 2 input images
+    N_MPRcreate = 1; % creating just 1 MPRAGElike image
+else
+    N_MPRcreate = 3; % creating 3 MPRAGElike images: 1 combined + 2 individuals
 end
 
 % Prepare output filenames and check nr of files to be created
@@ -116,37 +118,55 @@ ic_flags = struct( ...
     'descrip', 'MPRAGE-like image');
 
 % Get the job done
-fn_out_c = cell(Nlambda,1); 
+fn_out_c = cell(Nlambda,N_MPRcreate);
 for ii=1:Nlambda
     lambda = params.lambda(ii);
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_tmp,'_MPRAGElike.nii'];
-    else
-        %         fn_out_ii = [sprintf('%s_l%4d',fn_tmp,round(params.lambda(ii))),'_MPRAGElike.nii'];
-        fn_out_ii = sprintf( ... 
-            sprintf('%%s_MPRAGElike_l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
+    else % adding lambda alue as suffix if multiple values
+        fn_out_ii = sprintf( ...
+            sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
             fn_tmp,lambda);
         
     end
-    V_out.fname = fn_out_ii;
-    %     vval_MPRlike = (vval_in(1,:)-lambda)./(mean(vval_in(2:end,:),1)+lambda);
-    spm_imcalc(V_in, V_out, ...
-        '(X(1,:)-lambda)./(mean(X(2:end,:),1)+lambda)', ic_flags, lambda);
-    
-    % Check thresholding
-    if ~isempty(params.thresh) % apply thresholding
-        % load MPRAGElike image into memory
-        val_MPRlike = spm_read_vols(V_out); 
-        % Deal with "thresholding"
-        %         vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
-        val_MPRlike(val_MPRlike(:)<params.thresh(1)) = ...
-            abs(val_MPRlike(val_MPRlike(:)<params.thresh(1)))/lambda;
-        val_MPRlike(val_MPRlike(:)>params.thresh(2)) = 0;
-        % Write out fixed volume
-        spm_write_vol(V_out,val_MPRlike);
+    for jj=1:N_MPRcreate % Looping on nr of images to create per lambda
+        if jj>1 % add suffix for individual images
+            fn_out_ii_jj = spm_file(fn_out_ii,'suffix', ...
+                sprintf('-i%d',jj-1)); % add '_i1' or '_i2'
+        else
+            fn_out_ii_jj = fn_out_ii;
+        end
+        V_out.fname = fn_out_ii_jj;
+        switch jj
+            case 1
+                spm_imcalc(V_in, V_out, ...
+                    '(X(1,:)-lambda)./(mean(X(2:end,:))+lambda)', ...
+                    ic_flags, lambda);
+            case 2
+                spm_imcalc(V_in, V_out, ...
+                    '(X(1,:)-lambda)./(X(2,:)+lambda)', ...
+                    ic_flags, lambda);
+            case 3
+                spm_imcalc(V_in, V_out, ...
+                    '(X(1,:)-lambda)./(X(3,:)+lambda)', ...
+                    ic_flags, lambda);                
+        end
+        
+        % Check thresholding
+        if ~isempty(params.thresh) % apply thresholding
+            % load MPRAGElike image into memory
+            val_MPRlike = spm_read_vols(V_out);
+            % Deal with "thresholding"
+            %         vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
+            val_MPRlike(val_MPRlike(:)<params.thresh(1)) = ...
+                abs(val_MPRlike(val_MPRlike(:)<params.thresh(1)))/lambda;
+            val_MPRlike(val_MPRlike(:)>params.thresh(2)) = 0;
+            % Write out fixed volume
+            spm_write_vol(V_out,val_MPRlike);
+        end
+        % Collect output files
+        fn_out_c{ii,jj} = fn_out_ii_jj;
     end
-    % Collect output files
-    fn_out_c{ii} = fn_out_ii;
 end
 
 fn_out = char(fn_out_c);
