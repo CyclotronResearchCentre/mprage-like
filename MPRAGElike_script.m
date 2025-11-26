@@ -24,6 +24,18 @@ fn_in =char(fn_T1w,fn_MTw,fn_PDw);
 
 fn_out = hmri_MPRAGElike(fn_in)
 
+params = struct(...
+    'lambda', 100, ...
+    'indiv', false, ...
+    'thresh', [0 500], ...
+    'BIDSform', false);
+
+params.lambda = [50 100 200]; % multiple lambda's
+params.indiv = true;
+
+fn_out = hmri_MPRAGElike(fn_in,params)
+
+%% 
 % Check "global signal" of all images
 % __________________________________________________________________________
 %  
