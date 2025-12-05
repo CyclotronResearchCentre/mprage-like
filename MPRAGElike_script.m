@@ -23,11 +23,20 @@ fn_MTw = spm_select('FPList',pth_data_IRONS,'^sub.*-MTw_.*_MPM\.nii$');
 
 % SCAIFIELD data
 % CRC
-pth_data_SF = fullfile( pth_data_top,'CRC','SCAIFIELD','Pilot-04_S1','NIfTI');
+pth_data_SF = fullfile( pth_data_top,'SCAIFIELD','CRC','Pilot-04_S1','NIfTI');
 fn_T1w = spm_select('FPList',pth_data_SF,'^s.*-0012-.*-01-.*\.nii$');
 fn_PDw = spm_select('FPList',pth_data_SF,'^s.*-0014-.*-01-.*\.nii$');
 fn_MTw = spm_select('FPList',pth_data_SF,'^s.*-0016-.*-01-.*\.nii$');
-
+% NTN
+pth_data_SF = fullfile( pth_data_top,'SCAIFIELD','NTN','24_09_02_BVSS_C_10_RESCAN_MPM_02','NIfTI');
+fn_T1w = spm_select('FPList',pth_data_SF,'^s.*-0005-.*-01-.*\.nii$');
+fn_PDw = spm_select('FPList',pth_data_SF,'^s.*-0007-.*-01-.*\.nii$');
+fn_MTw = spm_select('FPList',pth_data_SF,'^s.*-0009-.*-01-.*\.nii$');
+% DZNE
+pth_data_SF = fullfile( pth_data_top,'SCAIFIELD','DZNE','24_08_22-TQMRI_42644_1c','NIfTI');
+fn_T1w = spm_select('FPList',pth_data_SF,'^s.*-0008-.*-01-.*\.nii$');
+fn_PDw = spm_select('FPList',pth_data_SF,'^s.*-0006-.*-01-.*\.nii$');
+fn_MTw = spm_select('FPList',pth_data_SF,'^s.*-0019-.*-01-.*\.nii$');
 
 % fn_in =char(fn_T1w,fn_MTw);
 fn_in =char(fn_T1w,fn_MTw,fn_PDw);
@@ -60,18 +69,14 @@ fn_out = hmri_MPRAGElike(fn_in,params)
 
 v_global = spm_global(spm_vol(fn_in));
 % v_global = % MS7T
-%   218.5170 
-%   123.9108 
-%   149.8330 
+%   218.5170 123.9108 149.8330 
 % v_global = % IRONSLEEP
-%   390.5394
-%   479.7623
-%   476.1641
+%   390.5394 479.7623 476.1641 
 % v_global = % SCAIFIELD
-%   716.4834
-%   706.7789
-%   756.9217
-  
+%   716.4834 706.7789 756.9217 % CRC
+%   929 1025 922 % NTN
+%   909.6434 812.4403  839.2374 % DZNE
+
 % Check range, mean/mode, histogram
 val_in = spm_read_vols(spm_vol(fn_in));
 sz = size(val_in)
@@ -82,19 +87,23 @@ mean_all = mean(vval_in)
 % mean_all =  % IRONSLEEP
 %   192.3433  222.7650  229.1573
 % mean_all =  % SCAIFIELD
-%   342.9494  353.9259  356.7661
+%   342.9494  353.9259  356.7661 % CRC
+%   509.4290  582.0244  505.3355 % NTN
+%   477.6616  423.5554  429.9221 % DZNE
 
-  thr_global = mean_all*.8
+thr_global = mean_all*.8
 % thr_global =  % MS7T
 %   155.6129   98.5174  117.5133
 % -> quite OK but some extra bits for T1w...
 % thr_global = % IRONSLEEP
 %   153.8746  178.2120  183.3258
 % thr_global = % SCAIFIELD
-%   274.3595  283.1407  285.4129
+%   274.3595  283.1407  285.4129 % CRC
+%   407.5432  465.6195  404.2684 % NTN
+%   382.1293  338.8443  343.9377 % DZNE
 
 % Crete a mask based on the union of the 3 thresholded images
-fn_mask = spm_file(Vmsk.fname,'suffix','_mask');
+fn_mask = spm_file(fn_in(1,:),'suffix','_mask');
 mask_glob = vval_in(:,1)>thr_global(1);
 for ii=2:numel(thr_global)
     mask_glob = mask_glob | vval_in(:,ii)>thr_global(ii);
@@ -103,6 +112,8 @@ Vmsk = spm_vol(fn_in(1,:));
 Vmsk.fname = fn_mask;
 Vmsk.dt(1) = 2;
 spm_write_vol(Vmsk,reshape(mask_glob,sz(1:3)))
+
+spm_check_registration(char(fn_in,fn_mask))
 
 % Look at histograms
 figure, hist(vval_in,100)
@@ -116,7 +127,7 @@ subplot(3,2,2), histogram(vval_in(mask_glob,1))
 subplot(3,2,4), histogram(vval_in(mask_glob,2))
 subplot(3,2,6), histogram(vval_in(mask_glob,3))
 
-spm_check_registration(fn_in)
+
 
 % Check median values
 % All voxels
@@ -126,19 +137,26 @@ median_all = median(vval_in)
 % median_all = % IRONSLEEP 
 %     22    20    24 % -> pretty useless !
 % median_all =  % SCAIFIELD
-%     34    41    34    
+%     34    41    34 % CRC
+%     90   133    87 % NTN
+%     67    57    54 % DZNE
 
-    mediam_msk = [median(vval_in(mask_glob,1)) median(vval_in(mask_glob,2)) median(vval_in(mask_glob,3))]
+mediam_msk = [median(vval_in(mask_glob,1)) median(vval_in(mask_glob,2)) median(vval_in(mask_glob,3))]
 % mediam_msk = % MS7T
 %    552   334   436 % Seems very interesting!
 % mediam_msk = % IRONSLEEP 
 %    470   553   581
 % mediam_msk = % SCAIFIELD
-%          963         956        1054
+%          963         956        1054 % CRC
+%         1055        1275        1095 % NTN
+%         1130         970        1042 % DZNE
 
 mean(mediam_msk)
 % 534.6667 % IRONSLEEP 
-% 991 % SCAIFIELD -> take it divided by 10 ???
+% SCAIFIELD -> take it divided by 10 ???
+% 991 % CRC
+% 1142 % NTN
+% 1047 % DZNE
 
 % Check range as percentile
 prctile(vval_in,[5 95])
@@ -147,15 +165,23 @@ prctile(vval_in,[5 95])
 %            2           2           2 % IRONSLEEP 
 %          776         982        1001
 %            5           5           5 % SCAIFIELD
-%         1555        1525        1621 
-
+%         1555        1525        1621 % CRC
+%            5           5           5 % NTN
+%         2016        2071        1983
+%            5           5           5 % DZNE
+%         1901        1799        1847
+        
 prctile([vval_in(mask_glob,1) vval_in(mask_glob,2) vval_in(mask_glob,3)],[5 95])
 %          162          64          66 % MS7T
 %         1033         685         848
 %          154          80          86 % IRONSLEEP 
 %          971        1256        1275
-%          151         286         150
-%         1940        1851        1988 SCAIFIELD
+%          151         286         150 % SCAIFIELD
+%         1940        1851        1988 % CRC
+%            5           5           5 %NTN
+%         2016        2071        1983
+%          341         190         173 % DZNE
+%         2394        2360        2334
 
 %% Lambda validation ?
 % Check Structural Similarity Index Metric (SSIM)
