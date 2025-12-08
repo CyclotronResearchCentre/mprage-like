@@ -148,21 +148,26 @@ V_out.descrip = 'MPRAGE-like image';
 ic_flags = struct( ...
     'dmtx', true, ... % load data matrix
     'dtype', 16, ...  % use floats!
-    'interp', 4, ...  % 4th degree B-splines as for normalization
-    'descrip', 'MPRAGE-like image');
+    'interp', 4);  % 4th degree B-splines as for normalization
+
 
 % Get the job done
 fn_out_c = cell(Nlambda,N_MPRcreate);
 for ii=1:Nlambda
+    % Check lambda value
     lambda = params.lambda(ii);
+    if isnan(lambda) % Automatic definition of lambda from images
+        lmabda = estimate_lambda(fn_in);
+    end
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
     else % adding lambda alue as suffix if multiple values
         fn_out_ii = sprintf( ...
             sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
-            fn_basename,lambda);
-        
+            fn_basename,lambda);        
     end
+    % Save lambda in image header (description field)
+    ic_flags.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
     for jj=1:N_MPRcreate % Looping on nr of images to create per lambda
         if jj>1 % add suffix for individual images
             fn_out_ii_jj = spm_file(fn_out_ii,'suffix', ...
@@ -210,5 +215,37 @@ end
 
 % Collect output
 fn_out = char(fn_out_c);
+
+end
+
+%% SUBFUNCTION
+% Estimate the value of lambda from the input image intensities
+
+function lambda = estimate_lambda(fn_in)
+
+% Number of images 
+Nfn_in = size(fn_in,1);
+
+% Get "global" estimate, using SPM's function
+v_global = spm_global(spm_vol(fn_in));
+
+% Get the voxel values from all images
+val_in = spm_read_vols(spm_vol(fn_in));
+sz_img = size(val_in);
+vval_in = reshape(val_in,[prod(sz(1:3)) sz(4)]);
+
+% Create a "brain mask" of voxels > global across images
+mask_glob = vval_in(:,1)>thr_global(1);
+for ii=2:Nfn_in
+    mask_glob = mask_glob | vval_in(:,ii)>thr_global(ii);
+end
+
+% Take lambda as the mean across images of the median values all 
+% within-mask voxel values of each image.
+median_vval = zeros(1,Nfn_in);
+for ii=1:Nfn_in
+    median_vval = median(vval_in(mask_glob,ii));
+end
+lambda = mean(median_vval);
 
 end
