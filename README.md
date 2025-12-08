@@ -20,11 +20,7 @@ resemblance with an acquired T1w MPRAGE image (see figure below).
 
 The code was originally developed in Python by M.A. Fortin then a MATLAB implementation was proposed by C. Phillips. The latter implementation is aimed at being integrated in the [hMRI toolbox](https://hmri-group.github.io/hMRI-toolbox/), an extension of [SPM package](https://github.com/spm) to produce quantitative MRI maps from data acquired according to a "multi-parametric mapping" (MPM) protocol.
 
----
-
-## MATLAB version
-
-
+Find the sections about the [Python code](#python-version) and [MATLAB code](#matlab-version) here under.
 
 ---
 ## Python version
@@ -110,7 +106,20 @@ As part of the analysis pipeline described in the related publication, several e
 
 ---
 
-### Citation/Contact
+## MATLAB version
+
+The Matlab code does the same job as in Python. There is one extra key feature though: the empirical estimation of the $\lambda$ regularization parameter, based on the input image intensities. 
+
+From the main paper, we used the same data to empircally derive the optimal value $\lambda=100$ according to this procedure
+1. estimate all input images "global" value, using SPM's [`spm_global` function](https://github.com/spm/spm/blob/main/spm_global.m);
+2. find a "brain mask" as the union, across input images, of the voxels with values above this "global" value;
+3. $\lambda$ is simply the average of the median of the within-mask voxel values of each image.
+
+Note though that this has NOT yet been properly validated for different acquisition protocols! Still from a few tests with different acquisition protocols, the visual results, i.e. MPRAGE-like images obtained, were very satifactory.
+
+---
+
+## Citation/Contact
 
 This code is under Apache 2.0 licensing.
 
@@ -118,7 +127,7 @@ If you use this code in a publication, please cite the following paper:
 
 *Fortin M-A, Stirnberg R, Völzke Y, et al. MPRAGElike: A novel approach to generate T1w images from multi-contrast gradient echo images for brain segmentation. Magn Reson Med. 2025;1-16. doi: 10.1002/mrm.30453*
 
-If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact me at: marc.a.fortin@ntnu.no
+If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact us at: <marc.a.fortin@ntnu.no> (for the Python code) or <c.phillips@uliege.be> (for the MATLAB code)
 
 
 
