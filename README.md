@@ -5,8 +5,7 @@
 
 This repository contains the code required to produce MPRAGE*like* images directly from Multi-Parameter Mapping (MPM) or Variable Flip Angle (VFA) images without the need to calculate quantitative maps. 
 
-This technique can become particularly interesting for long neuroimaging protocols with a MPM protocol and where scan time can become particularly long. The MPRAGE*like* images have shown promising results in typical neuroimaging analysis tasks like automatic brain segmentation where high similarity was observed with actual MPRAGE images [see related publication in Magnetic Resonance In Medicine from *Fortin 
-M.-A. et al.*, 2025: https://doi.org/10.1002/mrm.30453]. 
+This technique can become particularly interesting for long neuroimaging protocols with a MPM protocol and where scan time can become particularly long. The MPRAGE*like* images have shown promising results in typical neuroimaging analysis tasks like automatic brain segmentation where high similarity was observed with actual MPRAGE images [see related publication in Magnetic Resonance In Medicine from *Fortin M.-A. et al.*, 2025: https://doi.org/10.1002/mrm.30453]. 
 
 ---
 
@@ -17,9 +16,16 @@ resemblance with an acquired T1w MPRAGE image (see figure below).
 
 ![Figure to show an example MPRAGElike image](fig-for-repo.png)
 
----
 
-## Installation
+
+The code was originally developed in Python by M.A. Fortin then a MATLAB implementation was proposed by C. Phillips. The latter implementation is aimed at being integrated in the [hMRI toolbox](https://hmri-group.github.io/hMRI-toolbox/), an extension of [SPM package](https://github.com/spm) to produce quantitative MRI maps from data acquired according to a "multi-parametric mapping" (MPM) protocol.
+
+Find the sections about the [Python code](#python-version) and [MATLAB code](#matlab-version) here under.
+
+---
+## Python version
+
+### Installation
 
 1. Clone this repository.
 2. Create a virtual environment (i.e., with pip or conda) and install the required packages, which are provided in the *requirements.txt* file in this repository.
@@ -38,7 +44,7 @@ resemblance with an acquired T1w MPRAGE image (see figure below).
 
 ---
 
-## How to use it?
+### How to use it?
 
 ```
 python get_mprage-like.py --path2img /PATH/TO/NIFTI/FOLDER --echo 1 --reg 100 --subid TEST-00 --contrast 'all' -- path2save PATH/TO/RESULTS/FOLDER 
@@ -57,7 +63,7 @@ where:
 
 ---
 
-## Input images requirements:
+### Input images requirements:
 
 #### Convention for images
 
@@ -74,7 +80,7 @@ where:
 
 ---
 
-## External softwares used in the related publication:
+### External softwares used in the related publication:
 
 As part of the analysis pipeline described in the related publication, several external softwares that were **not** developed as part of this work were used (to which additional python libraries than the ones provided in the *requirements.txt* here and other downloads are required). It's important to mention that these external softwares are **not** required to compute MPRAGE*like* images, only to reproduce the complete analysis pipeline from the publication.
   Therefore, in order to help users interested in recreating the same pipeline as the one described in the paper, we have decided to share all external softwares used with their respective functionality in the pipeline: 
@@ -100,6 +106,19 @@ As part of the analysis pipeline described in the related publication, several e
 
 ---
 
+## MATLAB version
+
+The Matlab code does the same job as in Python. There is one extra key feature though: the empirical estimation of the $\lambda$ regularization parameter, based on the input image intensities. 
+
+From the main paper, we used the same data to empircally derive the optimal value $\lambda=100$ according to this procedure
+1. estimate all input images "global" value, using SPM's [`spm_global` function](https://github.com/spm/spm/blob/main/spm_global.m);
+2. find a "brain mask" as the union, across input images, of the voxels with values above this "global" value;
+3. $\lambda$ is simply the average of the median of the within-mask voxel values of each image.
+
+Note though that this has NOT yet been properly validated for different acquisition protocols! Still from a few tests with different acquisition protocols, the visual results, i.e. MPRAGE-like images obtained, were very satifactory.
+
+---
+
 ## Citation/Contact
 
 This code is under Apache 2.0 licensing.
@@ -108,7 +127,7 @@ If you use this code in a publication, please cite the following paper:
 
 *Fortin M-A, Stirnberg R, Völzke Y, et al. MPRAGElike: A novel approach to generate T1w images from multi-contrast gradient echo images for brain segmentation. Magn Reson Med. 2025;1-16. doi: 10.1002/mrm.30453*
 
-If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact me at: marc.a.fortin@ntnu.no
+If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact us at: <marc.a.fortin@ntnu.no> (for the Python code) or <c.phillips@uliege.be> (for the MATLAB code)
 
 
 
