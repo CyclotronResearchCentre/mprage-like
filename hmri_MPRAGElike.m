@@ -63,6 +63,17 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %
 % TO-DO's
 % 1) deal with BIDS organized data
+% 
+% SPM dependencies
+% SPM package is absolutely necessary to use this function as it relies on 
+% a series of SPM functions:
+% - spm_file, spm_vol, and spm_imcalc for the creation of the MPRAGE_like 
+%   image
+% - spm_get_defaults, spm_coreg, spm_matrix, and spm_get_space for the
+%   coregistration of the input images
+% - spm_global, spm_read_vols, and spm_vol for the automatic estimation of
+%   lambda
+% - spm_read_vols and spm_write_vols for the resulting image thresholding
 %
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
