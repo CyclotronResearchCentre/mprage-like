@@ -75,8 +75,7 @@ where:
 
 #### Coregistration
 
-- Since different images are combined to calculate the MPRAGElike image, the images should be registered together. Considering the different contrasts of MPM (or VFA) acquisitions are acquired rapidly one after the other in the 
-  same session, motion between the contrasts should be quite minimal and a simple rigid registration should be more than enough to correct for differences. Coregistration of the images is **not** part of this repository. 
+- Since different images are combined to calculate the MPRAGElike image, the images should be registered together. Considering the different contrasts of MPM (or VFA) acquisitions are acquired rapidly one after the other in the same session, motion between the contrasts should be quite minimal and a simple rigid registration should be more than enough to correct for differences. Coregistration of the images is **not** part of this repository for the Python version (but is available in the [Matlab version](#matlab-version)). 
 
 ---
 
@@ -108,14 +107,73 @@ As part of the analysis pipeline described in the related publication, several e
 
 ## MATLAB version
 
-The Matlab code does the same job as in Python. There is one extra key feature though: the empirical estimation of the $\lambda$ regularization parameter, based on the input image intensities. 
+The Matlab code does the same job as in Python to create the MPRAGE*like* image from T1w, MTw and PD images. Still two processing features were added in this version of the tool:
 
-From the main paper, we used the same data to empircally derive the optimal value $\lambda=100$ according to this procedure
+- the 2-3 input images can be automatically coregistered together, as a preliminary step, using SPM's coregistration tool ; 
+- the regularization parameter $\lambda$ can be empirically estimated , based on the input image intensities. 
+
+From the main paper, we used the same data to empirically derive the optimal value $\lambda=100$ according to this procedure
 1. estimate all input images "global" value, using SPM's [`spm_global` function](https://github.com/spm/spm/blob/main/spm_global.m);
 2. find a "brain mask" as the union, across input images, of the voxels with values above this "global" value;
 3. $\lambda$ is simply the average of the median of the within-mask voxel values of each image.
 
 Note though that this has NOT yet been properly validated for different acquisition protocols! Still from a few tests with different acquisition protocols, the visual results, i.e. MPRAGE-like images obtained, were very satifactory.
+
+### Installation
+
+For a simple and direct use of the function through the command line or any home-made script, then simply ensure that the folder containing the function is on MATLAB's path, as well as SPM's fodler. Indeed the code relies on a few basic SPM functions for the various processing steps:
+
+- `spm_file`, `spm_vol`, and `spm_imcalc` for the creation of the MPRAGE_like image;
+- `spm_get_defaults`, `spm_coreg`, `spm_matrix`, and `spm_get_space` for the  coregistration of the input images;
+- `spm_global`, `spm_read_vols`, and `spm_vol` for the automatic estimation of $\lambda$;
+- `spm_read_vols` and `spm_write_vols` for the resulting image thresholding
+
+**TO DO:** Once the `matlabbatch` configuration/execution file is available then, then the function and its GUI could be integrated in SPM's batching system, either in SPM or the hMRI toolbox.
+
+### How to use it?
+
+#### Command line 
+
+At the moment, the MATLAB code act as a self contained function, which can be called from the command line with the appropriate input:
+
+````matlab
+FORMAT
+  fn_out = hmri_MPRAGElike(fn_in,params)
+ 
+INPUT
+  fn_in : char array of filenames of 2 or 3 input images,
+            1st one should be T1w (numerator),
+            2nd (+3rd if provided) should be MTw and/or PDw (denominator)
+  params : structure with some parameters
+    .lambda : regularisation parameter(s) [NaN, def]
+              If NaN is passed, then it proceeds with an automatic
+              estimation of the regularization parameter (see the
+              subfunction here under for details).
+              If several values are passed, i.e. in a vector, then 1 image
+              is created per value. These are labdeled 'l100' and 'l200'
+              for lambada 100 and 200 for example.
+    .indiv  : a binary flag, to decide whether individual images are
+              created for each 2nd and 3rd input filename when 3 images are
+              passed in fn_in. These images will be labelled 'i1' and 'i2'.
+              [false, def.]
+    .thresh : threshold for [min max]range in MPRAGE-like image as in paper
+              but if left empty, NO thresholding applied. [[0 500], def.]
+    .coreg  : a binary flag, to decide whether or not the input images
+              should be coregistered to the 1st one. [false, def.]
+    .BIDSform : a binary flag, to indicate if BIDS format is followed.
+                [false, def.]
+ 
+OUTPUT
+  fn_out : char array of filenames of generated image(s)
+           Depending on the input parameters there could be up to 3 images
+           per lambda value passed.
+````
+
+**TO DO:** The `BIDSform` parameter is useless at the moment... but in the future, we should be able to harness BIDS data organization more efficiently.
+
+#### Batch
+
+**TO DO:** Once the the `matlabbatch` configuration/execution file is available then the function will be itnerfaced in SPM's batching system and one could then include it in his/her pipeline...
 
 ---
 
