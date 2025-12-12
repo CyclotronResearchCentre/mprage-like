@@ -169,7 +169,7 @@ OUTPUT
            per lambda value passed.
 ````
 
-**TO DO:** The `BIDSform` parameter is useless at the moment... but in the future, we should be able to harness BIDS data organization more efficiently.
+**TO DO:** The `.BIDSform` parameter is useless at the moment... but in the future, we should be able to harness BIDS data organization more efficiently.
 
 #### Batch
 

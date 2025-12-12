@@ -219,7 +219,7 @@ for ii=1:Nlambda
     end
 end
 
-% Cleanup temporary folder & images for gorecstration, if used
+% Cleanup temporary folder & images for coregistration, if used
 if params.coreg
     rmdir(pth_tmp,'s');
 end
