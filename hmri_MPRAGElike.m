@@ -168,7 +168,7 @@ for ii=1:Nlambda
     % Check lambda value
     lambda = params.lambda(ii);
     if isnan(lambda) % Automatic definition of lambda from images
-        lmabda = estimate_lambda(fn_in);
+        lmabda = estimate_lambda(fn_in_orig);
     end
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
