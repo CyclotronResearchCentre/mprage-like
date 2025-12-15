@@ -54,6 +54,8 @@ params.lambda = [50 100 200]; % multiple lambda's
 params.indiv = true;
 params.coreg = true;
 
+params.lambda = [NaN 100];
+params.coreg = true;
 fn_out = hmri_MPRAGElike(fn_in,params)
 
 %% 
