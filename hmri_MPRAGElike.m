@@ -237,13 +237,14 @@ function lambda = estimate_lambda(fn_in)
 % Number of images 
 Nfn_in = size(fn_in,1);
 
-% Get "global" estimate, using SPM's function
+% Get "global" estimate, using SPM's function, and threshold at 80%
 v_global = spm_global(spm_vol(fn_in));
+thr_global = v_global*.8;
 
 % Get the voxel values from all images
 val_in = spm_read_vols(spm_vol(fn_in));
 sz_img = size(val_in);
-vval_in = reshape(val_in,[prod(sz(1:3)) sz(4)]);
+vval_in = reshape(val_in,[prod(sz_img(1:3)) sz_img(4)]);
 
 % Create a "brain mask" of voxels > global across images
 mask_glob = vval_in(:,1)>thr_global(1);
@@ -255,8 +256,8 @@ end
 % within-mask voxel values of each image.
 median_vval = zeros(1,Nfn_in);
 for ii=1:Nfn_in
-    median_vval = median(vval_in(mask_glob,ii));
+    median_vval(ii) = median(vval_in(mask_glob,ii));
 end
-lambda = mean(median_vval);
+lambda = mean(median_vval)/10;
 
 end
