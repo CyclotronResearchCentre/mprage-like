@@ -126,7 +126,7 @@ fn_basename = fullfile(pth_out,spm_file(fn_in(1,:),'basename'));
 % To preserve the original images, the 2nd and 3rd (if provided) image(s) 
 % are simply copied in a temporary folder, coregistered to the 1st one,
 % then after processing the temporary volumes are deleted !
-fn_in_orig = fn_in;
+fn_in_orig = fn_in; %#ok<*NASGU>
 if params.coreg
     fn_in_c = cellstr(fn_in);
     % temporary folder is created within root folder, this might be an 
@@ -165,7 +165,6 @@ ic_flags = struct( ...
     'dmtx', true, ... % load data matrix
     'dtype', 16, ...  % use floats!
     'interp', 4);  % 4th degree B-splines as for normalization
-
 
 % Get the job done
 fn_out_c = cell(Nlambda,N_MPRcreate);
