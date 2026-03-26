@@ -32,6 +32,22 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % fn_out : char array of filenames of generated image(s)
 %          Depending on the input parameters there could be up to 3 images
 %          per lambda value passed.
+% 
+% KEY FEATURE
+% This function includes an automatic way to estimate the regularisation
+% parameter lambda. Lambda's value shoudl "scale up" with the intensity
+% range of the input images, so here is the proposed way to estimate
+% lambda from the inptu images:
+% 1/ find voxels with some tissues in one of the 2(3) input images, and 
+%    create a "data_mask".
+%    Simply take the global mean signal from each image with 'spm_global' 
+%    (cf. "The mean is estimated after discounting voxels outside the 
+%    object using  a criteria of greater than > (global mean)/8"), keep
+%    voxels above this value
+% 2/ take the median value of voxels intensity for each of the 
+%    2(3) input images
+% 3/ define lambda a 1/10 of the mean of these median values from the 2(3)
+%    input images
 %
 % NOTE
 % A) using spm_imcalc vs loading images
@@ -110,8 +126,8 @@ fn_basename = fullfile(pth_out,spm_file(fn_in(1,:),'basename'));
 % To preserve the original images, the 2nd and 3rd (if provided) image(s) 
 % are simply copied in a temporary folder, coregistered to the 1st one,
 % then after processing the temporary volumes are deleted !
+fn_in_orig = fn_in;
 if params.coreg
-    fn_in_orig = fn_in; %#ok<*NASGU>
     fn_in_c = cellstr(fn_in);
     % temporary folder is created within root folder, this might be an 
     % issue on some systems... -> deal with it later if/when necessary
@@ -167,7 +183,7 @@ for ii=1:Nlambda
             fn_basename,lambda);        
     end
     % Save lambda in image header (description field)
-    ic_flags.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
+    V_out.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
     for jj=1:N_MPRcreate % Looping on nr of images to create per lambda
         if jj>1 % add suffix for individual images
             fn_out_ii_jj = spm_file(fn_out_ii,'suffix', ...
@@ -227,12 +243,12 @@ function lambda = estimate_lambda(fn_in)
 Nfn_in = size(fn_in,1);
 
 % Get "global" estimate, using SPM's function
-v_global = spm_global(spm_vol(fn_in));
+thr_global = spm_global(spm_vol(fn_in));
 
 % Get the voxel values from all images
 val_in = spm_read_vols(spm_vol(fn_in));
 sz_img = size(val_in);
-vval_in = reshape(val_in,[prod(sz(1:3)) sz(4)]);
+vval_in = reshape(val_in,[prod(sz_img(1:3)) sz_img(4)]);
 
 % Create a "brain mask" of voxels > global across images
 mask_glob = vval_in(:,1)>thr_global(1);
@@ -240,8 +256,8 @@ for ii=2:Nfn_in
     mask_glob = mask_glob | vval_in(:,ii)>thr_global(ii);
 end
 
-% Take lambda as the mean across images of the median values all 
-% within-mask voxel values of each image.
+% Take lambda as a tenth of the mean (across images) of the median values 
+% of all within-mask voxel values of each image.
 median_vval = zeros(1,Nfn_in);
 for ii=1:Nfn_in
     median_vval = median(vval_in(mask_glob,ii));
