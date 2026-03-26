@@ -41,7 +41,7 @@ imgmtw.preview = @(f) spm_image('Display',char(f));
 %--------------------------------------------------------------------------
 imgpdw         = cfg_files;
 imgpdw.tag     = 'imgpdw';
-imgpdw.name    = 'PDw Images';
+imgpdw.name    = 'PDw Image';
 imgpdw.val     = {{''}};
 imgpdw.help    = {'This is (one of) the image(s) that is placed in the denumerator.'};
 imgpdw.filter  = 'image';
@@ -188,7 +188,7 @@ end
 function out = hmri_run_mpragelike(job)
 
 % Collect input
-fn_in = char(job.imgt1w , job.imgmtw , job.imgpdw);
+fn_in = char(job.imgt1w{1} , job.imgmtw{1} , job.imgpdw{1});
 
 params = struct( ...
     'lambda', job.options.lambda, ...
@@ -201,6 +201,6 @@ params = struct( ...
 fn_out = hmri_MPRAGElike(fn_in,params);
 
 % Collect output
-out.images = fn_out;
+out.images = {fn_out};
 
 end
