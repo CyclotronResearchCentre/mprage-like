@@ -13,14 +13,17 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %           1st one should be T1w (numerator),
 %           2nd (+3rd if provided) should be MTw and/or PDw (denominator)
 % params : structure with some parameters
-%   .lambda : regularisation parameter(s) [100, def]
+%   .lambda : regularisation parameter(s) [NaN, def]
+%             If NaN is passed, then it proceeds with an automatic
+%             estimation of the regularization parameter (see the
+%             subfunction here under for details).
 %             If several values are passed, i.e. in a vector, then 1 image
 %             is created per value. These are labdeled 'l100' and 'l200'
 %             for lambada 100 and 200 for example.
 %   .indiv  : a binary flag, to decide whether individual images are
 %             created for each 2nd and 3rd input filename when 3 images are
-%             passed in fn_in. These images will be labelled 'i1' and 'i2'.
-%             [false, def.]
+%             passed in fn_in. [false, def.]
+%             These images will be labelled 'i1' and 'i2'. 
 %   .thresh : threshold for [min max]range in MPRAGE-like image as in paper
 %             but if left empty, NO thresholding applied. [[0 500], def.]
 %   .coreg  : a binary flag, to decide whether or not the input images
@@ -76,7 +79,17 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 %
 % TO-DO's
 % 1) deal with BIDS organized data
-% 2) add (optional) coregsitration step in processing
+% 
+% SPM dependencies
+% SPM package is absolutely necessary to use this function as it relies on 
+% a series of SPM functions:
+% - spm_file, spm_vol, and spm_imcalc for the creation of the MPRAGE_like 
+%   image
+% - spm_get_defaults, spm_coreg, spm_matrix, and spm_get_space for the
+%   coregistration of the input images
+% - spm_global, spm_read_vols, and spm_vol for the automatic estimation of
+%   lambda
+% - spm_read_vols and spm_write_vols for the resulting image thresholding
 %
 % REFERENCCE
 % Fortin M.-A. et al., 2025: https://doi.org/10.1002/mrm.30453]
@@ -89,7 +102,7 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 
 % Set defaults & check input
 params_def = struct(...
-    'lambda', 100, ...
+    'lambda', NaN, ...
     'indiv', false, ...
     'thresh', [0 500], ...
     'coreg', false, ...
@@ -102,10 +115,10 @@ if Nimg_in > 3
 elseif Nimg_in < 2
     error('Too few input images');
 end
+N_MPRcreate = 1; % creating just 1 MPRAGElike image by defautlt
 if Nimg_in==2 && params.indiv
     params.indiv = false ; % No individual images if only 2 input images
-    N_MPRcreate = 1; % creating just 1 MPRAGElike image
-else
+elseif Nimg_in==3 && params.indiv
     N_MPRcreate = 3; % creating 3 MPRAGElike images: 1 combined + 2 individuals
 end
 
@@ -120,7 +133,6 @@ end
 pth_in = spm_file(fn_in(1,:),'fpath');
 pth_out = pth_in;
 fn_basename = fullfile(pth_out,spm_file(fn_in(1,:),'basename'));
-% fn_tmp = fullfile(pth_out, fn_basename);
 
 % Deal with coregistration, if requested
 % To preserve the original images, the 2nd and 3rd (if provided) image(s) 
@@ -166,18 +178,17 @@ ic_flags = struct( ...
     'dtype', 16, ...  % use floats!
     'interp', 4);  % 4th degree B-splines as for normalization
 
-
 % Get the job done
 fn_out_c = cell(Nlambda,N_MPRcreate);
 for ii=1:Nlambda
     % Check lambda value
     lambda = params.lambda(ii);
     if isnan(lambda) % Automatic definition of lambda from images
-        lmabda = estimate_lambda(fn_in);
+        lambda = estimate_lambda(fn_in_orig);
     end
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
-    else % adding lambda alue as suffix if multiple values
+    else % adding lambda value as suffix if multiple values
         fn_out_ii = sprintf( ...
             sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
             fn_basename,lambda);        
@@ -224,7 +235,7 @@ for ii=1:Nlambda
     end
 end
 
-% Cleanup temporary folder & images for gorecstration, if used
+% Cleanup temporary folder & images for coregistration, if used
 if params.coreg
     rmdir(pth_tmp,'s');
 end
@@ -235,8 +246,8 @@ fn_out = char(fn_out_c);
 end
 
 %% SUBFUNCTION
-% Estimate the value of lambda from the input image intensities
 
+% Estimate the value of lambda from the input image intensities
 function lambda = estimate_lambda(fn_in)
 
 % Number of images 
@@ -260,8 +271,8 @@ end
 % of all within-mask voxel values of each image.
 median_vval = zeros(1,Nfn_in);
 for ii=1:Nfn_in
-    median_vval = median(vval_in(mask_glob,ii));
+    median_vval(ii) = median(vval_in(mask_glob,ii));
 end
-lambda = mean(median_vval);
+lambda = mean(median_vval)/10;
 
 end
