@@ -65,9 +65,9 @@ lambda.help    = {
     'If set to NaN then an automatic procedure is used to estimate the value.'
     'It can also be a real value (or a vector) to test a (or several) value(s) of lambda.'
     }';
-lambda.strtype = 'r';
+lambda.strtype = 'e';
 lambda.num     = [1 Inf];
-lambda.def     = 'NaN'; % Estimate lambda 'on the fly' from the images
+lambda.val     = {NaN}; % Estimate lambda 'on the fly' from the images
 
 %--------------------------------------------------------------------------
 % indivimg Build individidual maps if both PDw & MTw are provided, or not
@@ -88,7 +88,7 @@ indivimg.values  = {
                     false
                     true
 }';
-indivimg.def     = false ; % No individual images by default
+indivimg.val    = {false} ; % No individual images by default
 
 %--------------------------------------------------------------------------
 % thresh Threshold for intensity of resulting MPRAGElike image
@@ -102,7 +102,7 @@ thresh.help    = {
     }';
 thresh.strtype = 'r';
 thresh.num     = [1 2];
-thresh.def     = [0 500];
+thresh.val     = {[0 500]};
 
 %--------------------------------------------------------------------------
 % coreg Coregister the MTw/PDw images onto the T1w image, or not
@@ -122,7 +122,7 @@ coreg.values  = {
                     false
                     true
 }';
-coreg.def     = false ; % No coregistration by default
+coreg.val     = {false} ; % No coregistration by default
 
 %--------------------------------------------------------------------------
 % bidsform BIDS formating of the data
@@ -142,7 +142,7 @@ bidsform.values  = {
                     false
                     true
 }';
-bidsform.def     = false ; % Not BIDS by default
+bidsform.val     = {false} ; % Not BIDS by default
 
 %--------------------------------------------------------------------------
 % options Estimation Options
