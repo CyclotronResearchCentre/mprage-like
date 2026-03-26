@@ -7,6 +7,9 @@
 % Written by C. Phillips, 
 % Cyclotron Research Centre, University of Liege, Belgium
 
+% FOlder with code
+cd('D:\6_GitHubCRC_Git\mprage-like')
+
 % Pick up some "old" test data
 pth_data_top = 'D:\ccc_DATA\Test_MPRAGElike';
 
