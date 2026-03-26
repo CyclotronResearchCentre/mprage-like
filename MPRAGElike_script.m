@@ -7,7 +7,11 @@
 % Written by C. Phillips, 
 % Cyclotron Research Centre, University of Liege, Belgium
 
-% FOlder with code
+% Initialize SPM
+spm('defaults','fmri'),
+spm_jobman('initcfg')
+
+% Folder with code
 cd('D:\6_GitHubCRC_Git\mprage-like')
 
 % Pick up some "old" test data
