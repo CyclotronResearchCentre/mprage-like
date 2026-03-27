@@ -5,7 +5,7 @@
 
 This repository contains the code required to produce MPRAGE*like* images directly from Multi-Parameter Mapping (MPM) or Variable Flip Angle (VFA) images without the need to calculate quantitative maps. 
 
-This technique can become particularly interesting for long neuroimaging protocols with a MPM protocol and where scan time can become particularly long. The MPRAGE*like* images have shown promising results in typical neuroimaging analysis tasks like automatic brain segmentation where high similarity was observed with actual MPRAGE images [see related publication in Magnetic Resonance In Medicine from *Fortin M.-A. et al.*, 2025: https://doi.org/10.1002/mrm.30453]. 
+This technique can become particularly interesting for long neuroimaging protocols with a MPM protocol and where scan time can become particularly long. The MPRAGE*like* images have shown promising results in typical neuroimaging analysis tasks like automatic brain segmentation where high similarity was observed with actual MPRAGE images, see related publication [*Fortin M.-A. et al.*, 2025](https://doi.org/10.1002/mrm.30453). 
 
 ---
 
@@ -115,7 +115,7 @@ The Matlab code does the same job as in Python to create the MPRAGE*like* image 
 From the main paper, we used the same data to empirically derive the optimal value $\lambda=100$ according to this procedure
 1. estimate all input images "global" value, using SPM's [`spm_global` function](https://github.com/spm/spm/blob/main/spm_global.m);
 2. find a "brain mask" as the union, across input images, of the voxels with values above this "global" value;
-3. $\lambda$ is simply the average of the median of the within-mask voxel values of each image.
+3. $\lambda$ is simply the average of the median of the within-mask voxel values of each image, divided by 10.
 
 Note though that this has NOT yet been properly validated for different acquisition protocols! Still from a few tests with different acquisition protocols, the visual results, i.e. MPRAGE-like images obtained, were very satifactory.
 
@@ -185,7 +185,10 @@ If you use this code in a publication, please cite the following paper:
 
 *Fortin M-A, Stirnberg R, Völzke Y, et al. MPRAGElike: A novel approach to generate T1w images from multi-contrast gradient echo images for brain segmentation. Magn Reson Med. 2025;1-16. doi: 10.1002/mrm.30453*
 
-If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact us at: <marc.a.fortin@ntnu.no> (for the Python code) or <c.phillips@uliege.be> (for the MATLAB code)
+If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact us at:
+
+- <marc.a.fortin@ntnu.no> for the Python code, or 
+- <c.phillips@uliege.be> for the MATLAB code.
 
 
 

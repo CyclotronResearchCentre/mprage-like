@@ -7,7 +7,11 @@
 % Written by C. Phillips, 
 % Cyclotron Research Centre, University of Liege, Belgium
 
-% FOlder with code
+% Initialize SPM
+spm('defaults','fmri'),
+spm_jobman('initcfg')
+
+% Folder with code
 cd('D:\6_GitHubCRC_Git\mprage-like')
 
 % Pick up some "old" test data
@@ -191,3 +195,18 @@ prctile([vval_in(mask_glob,1) vval_in(mask_glob,2) vval_in(mask_glob,3)],[5 95])
 %% Lambda validation ?
 % Check Structural Similarity Index Metric (SSIM)
 
+%% Test Matlabbatch
+
+mpragelike = tbx_scfg_hmri_MPRAGElike;
+[~, job_ML] = harvest(mpragelike, mpragelike, false, false);
+
+
+matlabbatch{1}.spm.tools.mpragelike.imgt1w = {'D:\ccc_DATA\Test_MPRAGElike\MS7T\sub-002_acq-T1w_echo-01_flip-2_mt-off_MPM.nii,1'};
+matlabbatch{1}.spm.tools.mpragelike.imgmtw = {'D:\ccc_DATA\Test_MPRAGElike\MS7T\sub-002_acq-MTw_echo-01_flip-1_mt-on_MPM.nii,1'};
+matlabbatch{1}.spm.tools.mpragelike.imgpdw = {'D:\ccc_DATA\Test_MPRAGElike\MS7T\sub-002_acq-PDw_echo-01_flip-1_mt-off_MPM.nii,1'};
+matlabbatch{1}.spm.tools.mpragelike.options.lambda = NaN;
+matlabbatch{1}.spm.tools.mpragelike.options.indivimg = true;
+matlabbatch{1}.spm.tools.mpragelike.options.thresh = [0 500];
+matlabbatch{1}.spm.tools.mpragelike.options.coreg = false;
+matlabbatch{1}.spm.tools.mpragelike.options.bidsform = false;
+spm_jobman('run', matlabbatch);
