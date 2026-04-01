@@ -65,7 +65,7 @@ lambda.help    = {
     'If set to NaN then an automatic procedure is used to estimate the value.'
     'It can also be a real value (or a vector) to test a (or several) value(s) of lambda.'
     }';
-lambda.strtype = 'e';
+lambda.strtype = 'r';
 lambda.num     = [1 Inf];
 lambda.val     = {NaN}; % Estimate lambda 'on the fly' from the images
 
@@ -203,6 +203,6 @@ params = struct( ...
 fn_out = hmri_MPRAGElike(fn_in,params);
 
 % Collect output
-out.images = {fn_out};
+out.images = cellstr(fn_out);
 
 end
