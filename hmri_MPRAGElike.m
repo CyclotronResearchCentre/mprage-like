@@ -191,7 +191,7 @@ for ii=1:Nlambda
     else % adding lambda value as suffix if multiple values
         fn_out_ii = sprintf( ...
             sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
-            fn_basename,lambda);        
+            fn_basename,round(lambda));        
     end
     % Save lambda in image header (description field)
     V_out.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
