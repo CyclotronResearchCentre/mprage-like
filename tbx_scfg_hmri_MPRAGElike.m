@@ -78,11 +78,11 @@ indivimg.name    = 'Build individual maps from pair of MTw & PDw';
 indivimg.help    = {
     'If both MTw and PDw images are provided,an MPRAGElike image is calculate with the average of these.'
     'Still, one could be interested in building an MRPAGElike image from each of these individually.'
-    'Thus this options allows to get 3 MPRAGElike images from MTw and PDw images.'
+    'Thus this options allows to get 3 MPRAGElike images from the mean of MTw and PDw images, then each alone.'
     }';
 indivimg.labels  = {
                     'Just mean of MTw and PDw'
-                    'Mean and individual from MTw and PDw'
+                    'Mean plus individual from MTw and PDw'
 }';
 indivimg.values  = {
                     false
@@ -112,7 +112,7 @@ coreg.tag     = 'coreg';
 coreg.name    = 'Coregister the MTw/PDw onto the T1w';
 coreg.help    = {
     'Coregister the MTw/PDw images onto the T1w image.'
-    'If the T1w, MTw, PDw are not in the same space, then one shoudl coregister them before calculating the MPRAGElike image.'
+    'If the T1w, MTw, PDw are not in the same space, then one should coregister them before calculating the MPRAGElike image.'
         }';
 coreg.labels  = {
                     'No coregistration'
@@ -133,6 +133,8 @@ bidsform.name    = 'BIDS formating';
 bidsform.help    = {
     'Follow BIDS convention, or not.'
     'If data are BIDS complient, then one should preserve the BIDS organisation.'
+    ''
+    'NOT SUPPORTED YET!!'
         }';
 bidsform.labels  = {
                     'Not BIDS compliant data'
@@ -149,7 +151,7 @@ bidsform.val     = {false} ; % Not BIDS by default
 %--------------------------------------------------------------------------
 options         = cfg_branch;
 options.tag     = 'options';
-options.name    = 'Creation Options';
+options.name    = 'Creation options';
 options.val     = {lambda indivimg thresh coreg bidsform};
 options.help    = {'Various creation options for the MPRAGE-like image.'};
 
@@ -165,7 +167,7 @@ mpragelike.help    = {
     ''
     'The method used here is based on work by Fortin et al. 2025 (https://doi.org/10.1002/mrm.30453).'
     ''
-    'The idea is to take the regularized ratio between a T1w image and a PDw or MTw (or mean of these 2) image(s). This results in a well-contrasted image looking like an actual MPRAGE acquisition.'
+    'The idea is to take the (regularized) ratio between a T1w image and a PDw or MTw (or mean of these 2) image(s). This results in a well-contrasted image looking like an actual MPRAGE acquisition.'
     ''
     'A few options are possible, esp. regarding the definition/estimation of the regularisation parameter.'
     }';
