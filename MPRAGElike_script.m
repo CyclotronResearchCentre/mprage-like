@@ -210,3 +210,5 @@ matlabbatch{1}.spm.tools.mpragelike.options.thresh = [0 500];
 matlabbatch{1}.spm.tools.mpragelike.options.coreg = false;
 matlabbatch{1}.spm.tools.mpragelike.options.bidsform = false;
 spm_jobman('run', matlabbatch);
+
+save MBatch_MPRAGElike_test matlabbatch
