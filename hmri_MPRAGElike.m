@@ -195,6 +195,11 @@ for ii=1:Nlambda
     end
     % Save lambda in image header (description field)
     V_out.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
+    % and save lambda into sperate JSON file
+    fn_out_ii_json = spm_file(fn_out_ii,'ext','json');
+    info = struct('lambda',lambda);
+    spm_jsonwrite(fn_out_ii_json, info);
+    % Deal with volume(s) to create
     for jj=1:N_MPRcreate % Looping on nr of images to create per lambda
         if jj>1 % add suffix for individual images
             fn_out_ii_jj = spm_file(fn_out_ii,'suffix', ...
