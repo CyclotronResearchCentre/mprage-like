@@ -121,14 +121,14 @@ Note though that this has NOT yet been properly validated for different acquisit
 
 ### Installation
 
-For a simple and direct use of the function through the command line or any home-made script, then simply ensure that the folder containing the function is on MATLAB's path, as well as SPM's fodler. Indeed the code relies on a few basic SPM functions for the various processing steps:
+For a simple and direct use of the function through the command line or any home-made script, then simply ensure that the folder containing the function is on MATLAB's path, as well as SPM's folder. Indeed the code relies on a few basic SPM functions for the various processing steps:
 
 - `spm_file`, `spm_vol`, and `spm_imcalc` for the creation of the MPRAGE_like image;
 - `spm_get_defaults`, `spm_coreg`, `spm_matrix`, and `spm_get_space` for the  coregistration of the input images;
 - `spm_global`, `spm_read_vols`, and `spm_vol` for the automatic estimation of $\lambda$;
 - `spm_read_vols` and `spm_write_vols` for the resulting image thresholding
 
-**TO DO:** Once the `matlabbatch` configuration/execution file is available then, then the function and its GUI could be integrated in SPM's batching system, either in SPM or the hMRI toolbox.
+A `matlabbatch` configuration and execution file is now available, so the function and its GUI are integrated in SPM's batching system, either directly in SPM (as a separate toolbox) or within the hMRI toolbox (as an extra tool.
 
 ### How to use it?
 
@@ -173,7 +173,7 @@ OUTPUT
 
 #### Batch
 
-**TO DO:** Once the the `matlabbatch` configuration/execution file is available then the function will be itnerfaced in SPM's batching system and one could then include it in his/her pipeline...
+The `matlabbatch` allows the user to define all the necessary input through the GUI, then save this for further use.
 
 ---
 
@@ -183,7 +183,10 @@ This code is under Apache 2.0 licensing.
 
 If you use this code in a publication, please cite the following paper:
 
-*Fortin M-A, Stirnberg R, Völzke Y, et al. MPRAGElike: A novel approach to generate T1w images from multi-contrast gradient echo images for brain segmentation. Magn Reson Med. 2025;1-16. doi: 10.1002/mrm.30453*
+````
+Fortin M-A, Stirnberg R, Völzke Y, et al. MPRAGElike: A novel approach to generate T1w images from multi-contrast gradient echo images for brain segmentation. 
+Magn Reson Med. 2025;1-16. doi: 10.1002/mrm.30453
+````
 
 If you have any question regarding the usage of this code or any suggestions to improve it, you can create a GitHub issue or contact us at:
 
