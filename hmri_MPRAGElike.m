@@ -1,4 +1,4 @@
-function fn_out = hmri_MPRAGElike(fn_in,params)
+function [fn_out,lambda_out] = hmri_MPRAGElike(fn_in,params)
 
 % Function to calculate an MPRAGE-like image from a set of (2 or 3) images
 % acquired with the MPM protocol.
@@ -35,6 +35,7 @@ function fn_out = hmri_MPRAGElike(fn_in,params)
 % fn_out : char array of filenames of generated image(s)
 %          Depending on the input parameters there could be up to 3 images
 %          per lambda value passed.
+% lambda : estimated lambda value can be returned, if requested
 % 
 % KEY FEATURE
 % This function includes an automatic way to estimate the regularisation
@@ -180,11 +181,15 @@ ic_flags = struct( ...
 
 % Get the job done
 fn_out_c = cell(Nlambda,N_MPRcreate);
+fl_est_lambda = false; % Ass ume lambda not estimated
 for ii=1:Nlambda
     % Check lambda value
     lambda = params.lambda(ii);
     if isnan(lambda) % Automatic definition of lambda from images
         lambda = estimate_lambda(fn_in_orig);
+        % save value for later, if requested output
+        est_lambda = lambda;
+        fl_est_lambda = true;
     end
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
@@ -247,6 +252,9 @@ end
 
 % Collect output
 fn_out = char(fn_out_c);
+if nargout==2 || fl_est_lambda
+    lambda_out = est_lambda;
+end
 
 end
 
