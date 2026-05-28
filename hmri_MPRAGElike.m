@@ -181,7 +181,7 @@ ic_flags = struct( ...
 
 % Get the job done
 fn_out_c = cell(Nlambda,N_MPRcreate);
-fl_est_lambda = false; % Ass ume lambda not estimated
+fl_est_lambda = false; % First assume lambda not estimated
 for ii=1:Nlambda
     % Check lambda value
     lambda = params.lambda(ii);
