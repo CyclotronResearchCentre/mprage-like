@@ -196,7 +196,12 @@ for ii=1:Nlambda
     else % adding lambda value as suffix if multiple values
         fn_out_ii = sprintf( ...
             sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
-            fn_basename,round(lambda));        
+            fn_basename,round(lambda));
+        if exist(fn_out_ii, 'file') 
+            % In case the file already exists, give it a name with current
+            % data and time as suffix.
+            fn_out_ii = spm_file(fn_out_ii,'suffix',datestr(now,30));
+        end
     end
     % Save lambda in image header (description field)
     V_out.descrip = sprintf('MPRAGE-like image, lambda %d',round(lambda)) ;
