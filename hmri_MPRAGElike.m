@@ -192,14 +192,23 @@ for ii=1:Nlambda
         lambda = estimate_lambda(fn_in_orig);
         % save value for later, if requested output
         est_lambda = lambda;
-        fl_est_lambda = true;
+        fl_est_lambda = true; % estimated lambda at some point
+        fl_just_est_lambda = true; % just estimated lambda this time
+    else
+        fl_just_est_lambda = false;
     end
     if Nlambda==1 % just one lambda
         fn_out_ii = [fn_basename,'_MPRAGElike.nii'];
     else % adding lambda value as suffix if multiple values
-        fn_out_ii = sprintf( ...
-            sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
-            fn_basename,round(lambda));
+        if fl_just_est_lambda % just estimated lambda, so add 'el'
+            fn_out_ii = sprintf( ...
+                sprintf('%%s_MPRAGElike-el%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
+                    fn_basename, round(lambda));
+        else % some fixed lambda, so just 'l'
+            fn_out_ii = sprintf( ...
+                sprintf('%%s_MPRAGElike-l%%0%dd.nii',Nd_lambda), ... % Adding the right number of 0's
+                    fn_basename, round(lambda));
+        end
         if exist(fn_out_ii, 'file') 
             % In case the file already exists, give it a name with current
             % data and time as suffix.
