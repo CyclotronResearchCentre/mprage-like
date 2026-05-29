@@ -62,17 +62,20 @@ function [fn_out,lambda_out] = hmri_MPRAGElike(fn_in,params)
 % realworld space of the 1st image!
 % Loading the MPRAGE-like images makes it easier for the thresholding/
 % fixing of the image though
-% B) Thresholding of MPRAGE-like image
+% B) Bits of the T1w imaghes that are at 0 exactly are masked out in the
+% resulting image, hence the term ".*(X(1,:)>0)" added to the imcalc
+% operation.
+% C) Thresholding of MPRAGE-like image
 % In the MPRAGE-like image, capping values of extremely high values seems a
 % good idea but not so sure for the negative ones...
 % A better idea could be to 1/ take their absolute value, then 2/ divide by
 % lambda. This way we keep some positive but low-level signal
-% C) Coregistration
+% D) Coregistration
 % In order to keep the original data untouched, when the input images have
 % to be coregistered to the 1st one, then the 2nd (and 3rd image if
 % provided) are fist copied in a temporary folder. These coregistered
 % temporary images are then deleted at the end of the process.
-% D) FOllowing BIDS format
+% E) FOllowing BIDS format
 % This remains to be implemented...
 % - Filename should be suffixed with 'MPRAGElike' instead of 'MPM'
 % - if/when images are coregistered, then one should do the job in a
@@ -200,7 +203,7 @@ for ii=1:Nlambda
         if exist(fn_out_ii, 'file') 
             % In case the file already exists, give it a name with current
             % data and time as suffix.
-            fn_out_ii = spm_file(fn_out_ii,'suffix',datestr(now,30));
+            fn_out_ii = spm_file(fn_out_ii,'suffix',['_',datestr(now,30)]);
         end
     end
     % Save lambda in image header (description field)
@@ -221,15 +224,15 @@ for ii=1:Nlambda
         switch jj
             case 1
                 spm_imcalc(V_in, V_out, ...
-                    '(X(1,:)-lambda)./(mean(X(2:end,:))+lambda)', ...
+                    '(X(1,:)-lambda)./(mean(X(2:end,:))+lambda).*(X(1,:)>0)', ...
                     ic_flags, lambda);
             case 2
                 spm_imcalc(V_in, V_out, ...
-                    '(X(1,:)-lambda)./(X(2,:)+lambda)', ...
+                    '(X(1,:)-lambda)./(X(2,:)+lambda).*(X(1,:)>0)', ...
                     ic_flags, lambda);
             case 3
                 spm_imcalc(V_in, V_out, ...
-                    '(X(1,:)-lambda)./(X(3,:)+lambda)', ...
+                    '(X(1,:)-lambda)./(X(3,:)+lambda).(*X(1,:)>0)', ...
                     ic_flags, lambda);                
         end
         
