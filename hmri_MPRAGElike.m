@@ -24,8 +24,12 @@ function [fn_out,lambda_out] = hmri_MPRAGElike(fn_in,params)
 %             created for each 2nd and 3rd input filename when 3 images are
 %             passed in fn_in. [false, def.]
 %             These images will be labelled 'i1' and 'i2'. 
-%   .thresh : threshold for [min max]range in MPRAGE-like image as in paper
-%             but if left empty, NO thresholding applied. [[0 500], def.]
+%   .thresh : threshold for [min max] range in MPRAGE-like image as in 
+%             paper but 2 other options are possible [[0 500], def.]
+%             - if left empty, NO thresholding applied. 
+%             - if set to 0, if there are negaitve values, the intensities 
+%               are shifted up by the minimum value through out the image 
+%               such that there is no negative values anymore
 %   .coreg  : a binary flag, to decide whether or not the input images
 %             should be coregistered to the 1st one. [false, def.]
 %   .BIDSform : a binary flag, to indicate if BIDS format is followed.
@@ -249,11 +253,19 @@ for ii=1:Nlambda
         if ~isempty(params.thresh) % apply thresholding
             % load MPRAGElike image into memory
             val_MPRlike = spm_read_vols(V_out);
+            if numel(params.thresh)==2
             % Deal with "thresholding"
             %         vval_MPRlike(vval_MPRlike<params.thresh(1)) = 0;
-            val_MPRlike(val_MPRlike(:)<params.thresh(1)) = ...
-                abs(val_MPRlike(val_MPRlike(:)<params.thresh(1)))/lambda;
-            val_MPRlike(val_MPRlike(:)>params.thresh(2)) = 0;
+                val_MPRlike(val_MPRlike(:)<params.thresh(1)) = ...
+                    abs(val_MPRlike(val_MPRlike(:)<params.thresh(1)))/lambda;
+                val_MPRlike(val_MPRlike(:)>params.thresh(2)) = 0;
+            elseif numel(params.thresh)==1
+                min_val = min(val_MPRlike(:));
+                if min_val<0
+                    val_MPRlike(val_MPRlike(:)~=0) = ...
+                        val_MPRlike(val_MPRlike(:)~=0) - min_val;
+                end
+            end
             % Write out fixed volume
             spm_write_vol(V_out,val_MPRlike);
         end
